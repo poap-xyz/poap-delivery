@@ -21,4 +21,10 @@ export const mainStyles = css`
     position: relative;
     z-index: 50;
   }
+
+  button {
+    &:focus {
+      box-shadow: none !important;
+    }
+  }
 `;

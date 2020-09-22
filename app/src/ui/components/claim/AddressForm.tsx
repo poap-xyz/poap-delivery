@@ -61,6 +61,7 @@ const AddressForm: FC<AddressFormProps> = ({
             fontFamily={'var(--alt-font)'}
             type={'submit'}
             isLoading={buttonDisabled}
+            isDisabled={true}
           >
             Lookup
           </Button>

@@ -8,6 +8,7 @@ import MainLayout from 'ui/layouts/MainLayout';
 import Hero from 'ui/components/Hero';
 import Welcome from 'ui/components/Welcome';
 import Events from 'ui/components/Events';
+import SiteNoticeModal from 'ui/components/SiteNoticeModal';
 
 const Home = () => {
   return (
@@ -16,6 +17,7 @@ const Home = () => {
         <Hero />
         <Welcome />
         <Events />
+        <SiteNoticeModal />
       </MainLayout>
     </PageWrapper>
   );

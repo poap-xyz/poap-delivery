@@ -28,7 +28,7 @@ const Events: FC = () => {
                     title={_event.cardTitle}
                     body={_event.cardText}
                     image={_event.image}
-                    buttonText={_event.active ? 'Claim your POAP' : 'Coming soon!'}
+                    buttonText={_event.active ? 'Claim your POAP' : 'Claim your POAP'}
                     buttonEnabled={_event.active}
                     buttonLink={_event.link}
                   />

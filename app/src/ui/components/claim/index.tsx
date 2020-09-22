@@ -14,8 +14,8 @@ import { useStateContext } from 'lib/hooks/useCustomState';
 import AddressForm from './AddressForm';
 import BadgeHolder from './BadgeHolder';
 import Transactions from './Transactions';
-
 import CardWithBadges from 'ui/components/CardWithBadges';
+import SiteNoticeModal from 'ui/components/SiteNoticeModal';
 
 // ABI
 import abi from 'lib/abi/poapAirdrop.json';
@@ -298,6 +298,7 @@ const Claim: FC<ClaimProps> = ({ event }) => {
         </CardWithBadges>
       )}
       <Transactions transactions={eventTransactions} />
+      <SiteNoticeModal />
     </Box>
   );
 };
