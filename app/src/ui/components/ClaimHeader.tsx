@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Box, Flex, Heading, Link } from '@chakra-ui/core';
+import { Box, Flex, Heading, Image, Link } from '@chakra-ui/core';
 
 // UI
 import Content from 'ui/styled/Content';
@@ -27,6 +27,15 @@ const ClaimHeader: FC<ClaimHeaderProps> = ({ event }) => {
           lineHeight={'80px'}
           textAlign={'center'}
         >
+          {event.pageTitleImage && (
+            <Image
+              size={'40px'}
+              display={'inline'}
+              margin={'0 10px 5px 0'}
+              src={event.pageTitleImage}
+              alt={event.pageTitle}
+            />
+          )}
           {event.pageTitle}
         </Heading>
         <Content dangerouslySetInnerHTML={{ __html: event.pageText }} />

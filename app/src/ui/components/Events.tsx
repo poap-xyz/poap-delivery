@@ -28,8 +28,9 @@ const Events: FC = () => {
                     title={_event.cardTitle}
                     body={_event.cardText}
                     image={_event.image}
-                    buttonText={_event.active ? 'Claim your POAP' : 'Claim your POAP'}
-                    buttonEnabled={_event.active}
+                    // buttonText={_event.active ? 'Claim your POAP' : 'Migration in process'}
+                    buttonText={'Claim your POAP'}
+                    buttonEnabled
                     buttonLink={_event.link}
                   />
                 </Flex>

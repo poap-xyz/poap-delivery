@@ -30,6 +30,7 @@ export type AirdropEventData = {
   cardTitle: string;
   cardText: string;
   pageTitle: string;
+  pageTitleImage?: string;
   pageText: string;
   contractAddress: string;
   addresses: AddressData | null;
@@ -48,4 +49,21 @@ export type Transaction = {
   address: string;
   hash: string;
   status: 'passed' | 'pending' | 'failed';
+};
+
+export type ClaimRequest = {
+  contract: string;
+  index: number;
+  recipient: string;
+  events: number[];
+  proofs: string[];
+};
+
+export type ClaimResponse = {
+  tx_hash: string;
+  beneficiary: string;
+  signer: string;
+  created_date: string;
+  tx_status: string;
+  layer: string;
 };

@@ -5,7 +5,7 @@ import { Box, Flex, Link, Icon, Spinner } from '@chakra-ui/core';
 import Card from 'ui/components/Card';
 
 // Helpers
-import { etherscanLinks } from 'lib/helpers/etherscan';
+import { blockscoutLinks } from 'lib/helpers/blockscout';
 
 // Type
 import { Transaction } from 'lib/types';
@@ -76,7 +76,7 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction }) => {
               TX HASH
             </Box>
             <Box textAlign={'center'} color={'primaryColor'}>
-              <Link href={etherscanLinks.transaction(transaction.hash)} isExternal>
+              <Link href={blockscoutLinks.transaction(transaction.hash)} isExternal>
                 {shortTx(transaction.hash)}{' '}
                 <Icon name={'external-link'} size={'14px'} mt={'-3px'} />
               </Link>

@@ -6,6 +6,7 @@ type AddressFormProps = {
   address: string;
   error: string;
   buttonDisabled: boolean;
+  isDisabled: boolean;
   inputAction: (string) => void;
   submitAction: () => void;
 };
@@ -16,6 +17,7 @@ const AddressForm: FC<AddressFormProps> = ({
   submitAction,
   inputAction,
   buttonDisabled,
+  isDisabled,
 }) => {
   const handleChange = (e: React.FormEvent<HTMLInputElement>) => {
     inputAction(e.currentTarget.value);
@@ -61,7 +63,7 @@ const AddressForm: FC<AddressFormProps> = ({
             fontFamily={'var(--alt-font)'}
             type={'submit'}
             isLoading={buttonDisabled}
-            isDisabled={true}
+            isDisabled={isDisabled}
           >
             Lookup
           </Button>

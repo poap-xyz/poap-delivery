@@ -14,7 +14,7 @@ async function main() {
   const rootHash = tree.getRoot();
   console.log("Merkle tree root hash:", rootHash);
 
-  let provider = network === 'localhost' ? new ethers.providers.JsonRpcProvider('http://localhost:9545') : new ethers.getDefaultProvider(network);
+  let provider = new ethers.getDefaultProvider(network);
   const deployer = new ethers.Wallet(privateKey, provider);
 
   console.log("Deploying the contracts with the account:", await deployer.getAddress());

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import constate from 'constate';
-import Web3 from 'web3';
 import Web3Modal from 'web3modal';
 // @ts-ignore
 import WalletConnectProvider from '@walletconnect/web3-provider';
@@ -28,7 +27,6 @@ const useCustomState = () => {
   };
 
   // State
-  const [web3, setWeb3] = useState<Web3 | null>(null);
   const [account, setAccount] = useState<string>('');
   const [web3Modal, setWeb3Modal] = useState<any>(null);
   const [provider, setProvider] = useState<any>(null);
@@ -63,8 +61,6 @@ const useCustomState = () => {
   const connectWallet = async (): string => {
     try {
       const _provider = await web3Modal.connect();
-      const _web3: Web3 = new Web3(_provider);
-      setWeb3(_web3);
       setIsConnected(true);
       setProvider(_provider);
 
@@ -94,7 +90,6 @@ const useCustomState = () => {
       console.log(e);
     }
     web3Modal.clearCachedProvider();
-    setWeb3(null);
     setIsConnected(false);
     setAccount('');
   };
@@ -112,7 +107,6 @@ const useCustomState = () => {
   };
 
   return {
-    web3,
     connectWallet,
     disconnectWallet,
     isConnected,

@@ -9,6 +9,7 @@ export type Params = {
 export const endpoints = {
   poap: {
     events: `${process.env.GATSBY_API_POAP}/events`,
+    claim: `${process.env.GATSBY_API_POAP}/actions/claim-delivery`,
     scan: (address: string) => `${process.env.GATSBY_API_POAP}/actions/scan/${address}`,
     token: (token: number) => `${process.env.GATSBY_POAP_APP}/token/${token}`,
     wallet: (address: string) => `${process.env.GATSBY_POAP_APP}/scan/${address}`,

@@ -2,7 +2,6 @@ import React, { FC } from 'react';
 import { Flex, Heading, Box, Button, Image, Link, Icon } from '@chakra-ui/core';
 
 // Helpers
-import { etherscanLinks } from 'lib/helpers/etherscan';
 import { endpoints } from 'lib/api';
 
 // Asset
@@ -19,12 +18,14 @@ type BadgeHolderProps = {
   claimed: boolean;
   poaps: PoapEvent[];
   buttonDisabled: boolean;
+  isLoading: boolean;
 };
 
 const BadgeHolder: FC<BadgeHolderProps> = ({
   backAction,
   submitAction,
   buttonDisabled,
+  isLoading,
   address,
   ens,
   claims,
@@ -35,14 +36,14 @@ const BadgeHolder: FC<BadgeHolderProps> = ({
   const handleSubmit = () => submitAction();
 
   let receiver = (
-    <Link href={etherscanLinks.address(address)} isExternal color={'primaryColor'}>
+    <Link href={endpoints.poap.wallet(address)} isExternal color={'primaryColor'}>
       {shortAddress(address)} <Icon name={'external-link'} size={'14px'} mt={'-5px'} />
     </Link>
   );
 
   if (ens) {
     receiver = (
-      <Link href={etherscanLinks.address(address)} isExternal color={'primaryColor'}>
+      <Link href={endpoints.poap.wallet(address)} isExternal color={'primaryColor'}>
         {ens} ({shortAddress(address)}) <Icon name={'external-link'} size={'14px'} mt={'-5px'} />
       </Link>
     );
@@ -112,7 +113,8 @@ const BadgeHolder: FC<BadgeHolderProps> = ({
             color={'white'}
             padding={'0 40px'}
             onClick={handleSubmit}
-            disabled={buttonDisabled}
+            isDisabled={buttonDisabled}
+            isLoading={isLoading}
           >
             Claim POAP Token
           </Button>

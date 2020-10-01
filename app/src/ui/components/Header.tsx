@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/core';
 
 // Helpers
-import { etherscanLinks } from 'lib/helpers/etherscan';
+import { endpoints } from 'lib/api';
 
 // Hooks
 import { useStateContext } from 'lib/hooks/useCustomState';
@@ -90,7 +90,7 @@ const Header = () => {
           <>
             {poaps.map((poap: UserPoap) => (
               <a
-                href={etherscanLinks.addressPoapInventory(account)}
+                href={endpoints.poap.token(poap.tokenId)}
                 target={'_blank'}
                 key={poap.tokenId}
                 rel="noopener noreferrer"

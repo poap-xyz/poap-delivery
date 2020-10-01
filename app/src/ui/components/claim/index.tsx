@@ -1,13 +1,11 @@
 import React, { FC, useState, useEffect } from 'react';
-import Web3 from 'web3';
-import { utils, getDefaultProvider } from 'ethers';
+import { ethers } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers/lib';
-import { Box, Spinner } from '@chakra-ui/core';
-import { useToast } from '@chakra-ui/core';
-import { Contract } from 'web3-eth-contract/types';
+import { Box, Spinner, useToast } from '@chakra-ui/core';
 
 // Hooks
 import { useEvents } from 'lib/hooks/useEvents';
+import { useClaim } from 'lib/hooks/useClaim';
 import { useStateContext } from 'lib/hooks/useCustomState';
 
 // Components
@@ -24,26 +22,21 @@ import abi from 'lib/abi/poapAirdrop.json';
 import MerkleTree from 'lib/helpers/merkleTree';
 
 // Types
-import { AirdropEventData, Transaction, PoapEvent } from 'lib/types';
+import { AirdropEventData, Transaction, PoapEvent, ClaimRequest } from 'lib/types';
 type ClaimProps = {
   event: AirdropEventData;
 };
 
 const Claim: FC<ClaimProps> = ({ event }) => {
-  const {
-    account,
-    web3,
-    isConnected,
-    connectWallet,
-    saveTransaction,
-    transactions,
-  } = useStateContext();
+  const { account, saveTransaction, transactions } = useStateContext();
   // Query hooks
   const { data: events } = useEvents();
+  const [claimPOAP, { isLoading: isClaimingPOAP }] = useClaim();
   const toast = useToast();
 
   const [poapsToClaim, setPoapsToClaim] = useState<PoapEvent[]>([]);
-  const [provider, setProvider] = useState<BaseProvider | null>(null);
+  const [providerL1, setProviderL1] = useState<BaseProvider | null>(null);
+  const [providerL2, setProviderL2] = useState<BaseProvider | null>(null);
   const [address, setAddress] = useState<string>(account);
   const [ens, setEns] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -51,26 +44,11 @@ const Claim: FC<ClaimProps> = ({ event }) => {
   const [validatingAddress, setValidatingAddress] = useState<boolean>(false);
   const [addressClaims, setAddressClaims] = useState<number[]>([]);
 
-  const [airdropContract, setAirdropContract] = useState<Contract | null>(null);
+  const [airdropContract, setAirdropContract] = useState<any>(null);
   const [claiming, setClaiming] = useState<boolean>(false);
   const [claimed, setClaimed] = useState<boolean>(false);
 
   const [eventTransactions, setEventTransactions] = useState<Transaction[]>([]);
-
-  const checkNetwork = (net: string) => {
-    const appNetwork = (process.env.GATSBY_ETHEREUM_NETWORK || '').toLowerCase();
-    if (appNetwork === 'homestead' && net === 'main') return;
-    if (net.toLowerCase() !== appNetwork) {
-      let network = appNetwork === 'homestead' ? 'Ethereum Main' : appNetwork;
-      toast({
-        title: 'Something is not right',
-        description: `Please connect to the ${network} Network.`,
-        status: 'error',
-        duration: null,
-        isClosable: false,
-      });
-    }
-  };
 
   const handleInputChange = (value: string) => {
     setAddress(value);
@@ -82,15 +60,15 @@ const Claim: FC<ClaimProps> = ({ event }) => {
     setEns('');
     setValidatingAddress(true);
 
-    if (!provider) {
+    if (!providerL1) {
       setError('No connection to the Ethereum network');
       setValidatingAddress(false);
       return;
     }
 
     // Check if is valid address
-    if (!utils.isAddress(address)) {
-      const resolvedAddress = await provider.resolveName(address);
+    if (!ethers.utils.isAddress(address)) {
+      const resolvedAddress = await providerL1.resolveName(address);
       if (!resolvedAddress) {
         setError('Please enter a valid Ethereum address or ENS Name');
         setValidatingAddress(false);
@@ -100,7 +78,7 @@ const Claim: FC<ClaimProps> = ({ event }) => {
       setAddress(resolvedAddress);
       _address = resolvedAddress;
     } else {
-      _address = utils.getAddress(address);
+      _address = ethers.utils.getAddress(address);
       setAddress(_address);
     }
 
@@ -112,24 +90,20 @@ const Claim: FC<ClaimProps> = ({ event }) => {
     }
 
     let _contract = airdropContract;
-    if (!web3) {
-      const _web3 = new Web3(Web3.givenProvider || process.env.GATSY_DEFAULT_PROVIDER);
-      _contract = new _web3.eth.Contract(abi, event.contractAddress);
-      setAirdropContract(_contract);
-    } else if (!airdropContract) {
+
+    if (!_contract) {
       setError('Error initiating contract');
       setValidatingAddress(false);
       return;
     }
 
-    const _claimed = await _contract.methods.claimed(_address).call();
+    const _claimed = (await _contract?.claimed(_address)) || false;
 
     setValidatingAddress(false);
     setAddressValidated(true);
     setAddressClaims(event.addresses[_address.toLowerCase()]);
     setClaimed(_claimed);
   };
-
   const clearForm = () => {
     setAddress('');
     setEns('');
@@ -138,16 +112,8 @@ const Claim: FC<ClaimProps> = ({ event }) => {
     setAddressValidated(false);
     setClaiming(false);
   };
-
   const handleClaimSubmit = async () => {
     const tree = new MerkleTree(event.addresses);
-    if (!airdropContract) return;
-
-    let _account = account;
-
-    if (!isConnected) {
-      _account = await connectWallet();
-    }
 
     let leaves = tree.expandLeaves();
     let leaf = leaves.find((leaf) => leaf.address === address.toLowerCase());
@@ -157,46 +123,59 @@ const Claim: FC<ClaimProps> = ({ event }) => {
 
     setClaiming(true);
 
-    let gas = 1000000;
-    try {
-      gas = await airdropContract.methods
-        .claim(index, address, addressClaims, proofs)
-        .estimateGas({ from: _account });
-      gas = Math.floor(gas * 1.3);
-    } catch (e) {
-      console.log('Error calculating gas');
-    }
+    const _claim: ClaimRequest = {
+      contract: event.contractAddress,
+      index,
+      recipient: address,
+      events: addressClaims,
+      proofs,
+    };
 
-    airdropContract.methods
-      .claim(index, address, addressClaims, proofs)
-      .send({
-        from: _account,
-        gas,
-      })
-      .on('transactionHash', (hash) => {
+    try {
+      const _claimResponse = await claimPOAP(_claim);
+      if (_claimResponse) {
         let tx: Transaction = {
           key: event.key,
-          address: _account,
-          hash: hash,
+          address,
+          hash: _claimResponse.tx_hash,
           status: 'pending',
         };
         saveTransaction(tx);
-      })
-      .catch(() => {
-        console.log('Error submitting transaction');
-        setClaiming(false);
-      });
+        toast({
+          title: 'Delivery in process!',
+          description: 'The POAP token is on its way to your wallet',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        throw new Error('No response received');
+      }
+    } catch (e) {
+      console.log('Error while claiming');
+      console.log(e);
+    }
   };
 
   // Effects
   useEffect(() => {
-    if (!provider) {
+    if (!providerL1) {
       try {
-        let _provider = getDefaultProvider(process.env.GATSBY_ETHEREUM_NETWORK, {
+        let _provider = ethers.getDefaultProvider(process.env.GATSBY_ETHEREUM_NETWORK, {
           etherscan: process.env.GATSBY_ETHERSCAN_KEY,
           infura: process.env.GATSBY_INFURA_KEY,
         });
-        setProvider(_provider);
+        setProviderL1(_provider);
+      } catch (e) {
+        console.log('Error while initiating provider');
+      }
+    }
+    if (!providerL2) {
+      try {
+        let _provider = ethers.getDefaultProvider(process.env.GATBY_L2_PROVIDER);
+        setProviderL2(_provider);
+        let _contract = new ethers.Contract(event.contractAddress, abi, _provider);
+        setAirdropContract(_contract);
       } catch (e) {
         console.log('Error while initiating provider');
       }
@@ -204,12 +183,11 @@ const Claim: FC<ClaimProps> = ({ event }) => {
   }, []); //eslint-disable-line
   useEffect(() => {
     const interval = setInterval(() => {
-      const _web3 = web3 || new Web3(Web3.givenProvider || process.env.GATSY_DEFAULT_PROVIDER);
-      if (transactions) {
+      if (transactions && providerL2) {
         transactions
           .filter((tx) => tx.status === 'pending')
           .forEach(async (tx) => {
-            let receipt = await _web3.eth.getTransactionReceipt(tx.hash);
+            let receipt = await providerL2.getTransactionReceipt(tx.hash);
             if (receipt) {
               let newTx: Transaction = { ...tx, status: 'passed' };
               if (!receipt.status) {
@@ -221,15 +199,16 @@ const Claim: FC<ClaimProps> = ({ event }) => {
           });
       }
       if (airdropContract && addressValidated && !claimed) {
-        airdropContract.methods
-          .claimed(address)
-          .call()
-          .then((claimed) => {
-            if (claimed) setClaimed(true);
-          });
+        airdropContract?.claimed(address).then((claimed) => {
+          if (claimed) setClaimed(true);
+        });
       }
-    }, 3000);
+    }, 2000);
     return () => clearInterval(interval);
+  }, [transactions]); //eslint-disable-line
+  useEffect(() => {
+    let filteredTransactions = transactions.filter((tx) => tx.key === event.key);
+    setEventTransactions(filteredTransactions);
   }, [transactions]); //eslint-disable-line
   useEffect(() => {
     if (account && address === '') setAddress(account);
@@ -240,23 +219,6 @@ const Claim: FC<ClaimProps> = ({ event }) => {
       setPoapsToClaim(_poapsToClaim);
     }
   }, [events]); //eslint-disable-line
-  useEffect(() => {
-    if (web3) {
-      web3.eth.net.getNetworkType().then((network: string) => {
-        checkNetwork(network);
-      });
-      try {
-        const contract = new web3.eth.Contract(abi, event.contractAddress);
-        setAirdropContract(contract);
-      } catch (e) {
-        console.log('Error initiating contract');
-      }
-    }
-  }, [web3]); //eslint-disable-line
-  useEffect(() => {
-    let filteredTransactions = transactions.filter((tx) => tx.key === event.key);
-    setEventTransactions(filteredTransactions);
-  }, [transactions]); //eslint-disable-line
 
   if (!events) {
     return (
@@ -280,6 +242,7 @@ const Claim: FC<ClaimProps> = ({ event }) => {
             inputAction={handleInputChange}
             submitAction={handleSubmit}
             buttonDisabled={validatingAddress}
+            isDisabled={!event.active}
           />
         </CardWithBadges>
       )}
@@ -294,11 +257,12 @@ const Claim: FC<ClaimProps> = ({ event }) => {
             claimed={claimed}
             submitAction={handleClaimSubmit}
             buttonDisabled={claiming}
+            isLoading={isClaimingPOAP}
           />
         </CardWithBadges>
       )}
       <Transactions transactions={eventTransactions} />
-      <SiteNoticeModal />
+      {!event.active && <SiteNoticeModal />}
     </Box>
   );
 };
