@@ -1,15 +1,15 @@
 import json
 
-PROOF_OF_GUCCI_EVENT_ID = 478
+EVENT_ID = 478
 
 def main():
-    print('> Starting Proof of Gucci formatting')
+    print('> Starting Event formatting')
     formatted_output = {}
     addresses_list = []
     with open('original.txt') as original_file:
         for each in original_file:
             addresses_list.append(each.strip().lower())
-            formatted_output[each.strip().lower()] = [PROOF_OF_GUCCI_EVENT_ID, ]
+            formatted_output[each.strip().lower()] = [EVENT_ID, ]
 
     with open('output.json', 'w') as outfile:
         json.dump(formatted_output, outfile, indent=4)
