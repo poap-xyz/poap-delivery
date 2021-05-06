@@ -42,6 +42,35 @@ exports.sourceNodes = async ({
 
 }
 
+exports.createPages = async function ({ actions, graphql }) {
+  const { data } = await graphql(`
+    query {
+      deliveries {
+        list {
+          card_text
+          card_title
+          event_ids
+          id
+          image
+          page_title
+          page_text
+          page_title_image
+          slug
+          metadata_title
+          metadata_description
+        }
+      }
+    }
+  `)
+  data.deliveries.list.forEach(delivery => {
+    const { slug, id } = delivery;
+    actions.createPage({
+      path: slug,
+      component: require.resolve(`./src/templates/delivery.tsx`),
+      context: { delivery },
+    })
+  })
+}
 exports.onCreateWebpackConfig = ({stage, loaders, actions}) => {
   if (stage === "build-html") {
     actions.setWebpackConfig({
