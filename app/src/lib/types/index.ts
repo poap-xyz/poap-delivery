@@ -81,3 +81,15 @@ export enum QueueStatus {
   in_process = 'IN_PROCESS',
   pending = 'PENDING',
 }
+
+export type GraphDelivery = {
+  card_text: string;
+  card_title: string;
+  event_ids: string;
+  id: number;
+  image: string;
+  page_title_image: string;
+  page_title: string;
+  page_text: string;
+  slug: string;
+};
