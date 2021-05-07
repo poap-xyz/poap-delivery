@@ -21,7 +21,7 @@ export type UserPoap = {
 };
 
 export type AddressData = {
-  string: number[];
+  [x: string]: number[];
 };
 
 export type AirdropEventData = {
@@ -92,4 +92,10 @@ export type GraphDelivery = {
   page_title: string;
   page_text: string;
   slug: string;
+};
+
+export type DeliveryAddress = {
+  address: string;
+  event_ids: string;
+  claimed: boolean;
 };
