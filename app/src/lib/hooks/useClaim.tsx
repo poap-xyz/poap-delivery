@@ -8,7 +8,7 @@ import { api, endpoints } from 'lib/api';
 import { ClaimRequest, QueueResponse } from 'lib/types';
 
 export const useClaim = () => {
-  const claimPOAP = (claim: ClaimRequest): Promise<Raffle> =>
+  const claimPOAP = (claim: ClaimRequest): Promise =>
     api().url(endpoints.poap.claim).post(claim).json();
 
   // react query

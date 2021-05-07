@@ -10,6 +10,7 @@ export const endpoints = {
   poap: {
     events: `${process.env.GATSBY_API_POAP}/events`,
     claim: `${process.env.GATSBY_API_POAP}/actions/claim-delivery`,
+    claimV2: `${process.env.GATSBY_API_POAP}/actions/claim-delivery-v2`,
     scan: (address: string) => `${process.env.GATSBY_API_POAP}/actions/scan/${address}`,
     queue: (messageId: string) => `${process.env.GATSBY_API_POAP}/queue-message/${messageId}`,
     token: (token: number) => `${process.env.GATSBY_POAP_APP}/token/${token}`,

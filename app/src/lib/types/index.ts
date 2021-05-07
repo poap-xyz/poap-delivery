@@ -24,6 +24,10 @@ export type AddressData = {
   [x: string]: number[];
 };
 
+export type ClaimData = {
+  [x: string]: boolean;
+};
+
 export type AirdropEventData = {
   key: string;
   image: string;
@@ -34,6 +38,7 @@ export type AirdropEventData = {
   pageText: string;
   contractAddress: string;
   addresses: AddressData | null;
+  claims?: ClaimData | null;
   eventIds: number[];
   githubLink: string;
   active: boolean;

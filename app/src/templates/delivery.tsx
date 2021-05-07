@@ -8,13 +8,13 @@ import { endpoints } from 'lib/api';
 import { useDeliveryAddresses } from 'lib/hooks/useDeliveryAddresses';
 
 // Types
-import { AirdropEventData, AddressData } from 'lib/types';
+import { AirdropEventData, AddressData, ClaimData } from 'lib/types';
 
 // UI
 import MainLayout from 'ui/layouts/MainLayout';
 import Container from 'ui/components/Container';
 import ClaimHeader from 'ui/components/ClaimHeader';
-import Claim from 'ui/components/claim';
+import ClaimV2 from 'ui/components/claim/ClaimV2';
 
 const Delivery = ({ pathContext }) => {
   const { delivery } = pathContext;
@@ -27,9 +27,13 @@ const Delivery = ({ pathContext }) => {
       let _addresses: AddressData = {
         [addresses[0].address]: addresses[0].event_ids.split(',').map((e) => parseInt(e, 10)),
       };
+      let claims: ClaimData = {
+        [addresses[0].address]: addresses[0].claimed,
+      };
 
       for (let each of addresses) {
         _addresses[each.address] = each.event_ids.split(',').map((e) => parseInt(e, 10));
+        claims[each.address] = each.claimed;
       }
       let _event: AirdropEventData = {
         key: delivery.slug,
@@ -41,6 +45,7 @@ const Delivery = ({ pathContext }) => {
         pageText: delivery.page_text,
         contractAddress: '',
         addresses: _addresses,
+        claims,
         eventIds: delivery.event_ids.split(',').map((e) => parseInt(e, 10)),
         githubLink: endpoints.poap.deliveryAddresses(delivery.id),
         active: true,
@@ -74,7 +79,7 @@ const Delivery = ({ pathContext }) => {
           {event && (
             <>
               <ClaimHeader event={event} />
-              <Claim event={event} />
+              <ClaimV2 event={event} deliveryId={delivery.id} />
             </>
           )}
         </Container>
