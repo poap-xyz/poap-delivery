@@ -52,6 +52,7 @@ const EventCard: FC<EventCardProps> = ({
         textAlign={'center'}
         justifyContent={'space-between'}
         flexDirection={'column'}
+        width={'300px'}
       >
         <Box>
           <Image src={image} rounded={'full'} size={'150px'} m={'20px auto'} />
