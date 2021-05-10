@@ -20,15 +20,21 @@ const Delivery = ({ pathContext }) => {
   const { delivery } = pathContext;
   const [event, setEvent] = useState<AirdropEventData | null>(null);
 
-  const { data: addresses } = useDeliveryAddresses({ id: delivery.id });
+  const { data: addresses, refetch } = useDeliveryAddresses({ id: delivery.id });
+
+  const reloadAction = () => {
+    refetch();
+  };
 
   useEffect(() => {
-    if (!event && addresses) {
+    if (addresses) {
       let _addresses: AddressData = {
-        [addresses[0].address]: addresses[0].event_ids.split(',').map((e) => parseInt(e, 10)),
+        [addresses[0].address.toLowerCase()]: addresses[0].event_ids
+          .split(',')
+          .map((e) => parseInt(e, 10)),
       };
       let claims: ClaimData = {
-        [addresses[0].address]: addresses[0].claimed,
+        [addresses[0].address.toLowerCase()]: addresses[0].claimed,
       };
 
       for (let each of addresses) {
@@ -55,7 +61,6 @@ const Delivery = ({ pathContext }) => {
       setEvent(_event);
     }
   }, [
-    event,
     setEvent,
     addresses,
     delivery.slug,
@@ -79,7 +84,7 @@ const Delivery = ({ pathContext }) => {
           {event && (
             <>
               <ClaimHeader event={event} />
-              <ClaimV2 event={event} deliveryId={delivery.id} />
+              <ClaimV2 event={event} deliveryId={delivery.id} reloadAction={reloadAction} />
             </>
           )}
         </Container>

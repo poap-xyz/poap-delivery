@@ -21,9 +21,10 @@ import { api, endpoints } from 'lib/api';
 type ClaimProps = {
   event: AirdropEventData;
   deliveryId: number;
+  reloadAction: () => void;
 };
 
-const ClaimV2: FC<ClaimProps> = ({ event, deliveryId }) => {
+const ClaimV2: FC<ClaimProps> = ({ event, deliveryId, reloadAction }) => {
   const { account, saveTransaction, transactions } = useStateContext();
   // Query hooks
   const { data: events } = useEvents();
@@ -119,13 +120,13 @@ const ClaimV2: FC<ClaimProps> = ({ event, deliveryId }) => {
       console.log(e);
     }
   };
-  const checkClaim = () => {
+  const checkClaim = useCallback(() => {
     if (event.claims && address) {
-      if (event.claims[address]) {
-        setClaimed(true);
+      if (event.claims[address.toLowerCase()]) {
+        setClaimed(event.claims[address.toLowerCase()]);
       }
     }
-  };
+  });
 
   // Effects
   useEffect(() => {
@@ -163,6 +164,7 @@ const ClaimV2: FC<ClaimProps> = ({ event, deliveryId }) => {
                   setClaiming(false);
                 }
                 saveTransaction(newTx);
+                reloadAction();
               }
             } else {
               const queue: Queue = await api().url(endpoints.poap.queue(tx.queue_uid)).get().json();
@@ -189,9 +191,9 @@ const ClaimV2: FC<ClaimProps> = ({ event, deliveryId }) => {
               }
             }
           });
+        checkClaim();
       }
-      checkClaim();
-    }, 2000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [transactions]); //eslint-disable-line
   useEffect(() => {
@@ -209,6 +211,9 @@ const ClaimV2: FC<ClaimProps> = ({ event, deliveryId }) => {
       setPoapsToClaim(_poapsToClaim);
     }
   }, [events]); //eslint-disable-line
+  useEffect(() => {
+    checkClaim();
+  }, [checkClaim, event]);
 
   if (!events) {
     return (
