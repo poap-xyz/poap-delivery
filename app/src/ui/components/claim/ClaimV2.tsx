@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect } from 'react';
+import React, { FC, useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers/lib';
 import { Box, Spinner, useToast } from '@chakra-ui/core';
