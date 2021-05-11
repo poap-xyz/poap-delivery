@@ -3,6 +3,29 @@ const fetch = require(`node-fetch`)
 const apiHost = process.env.GATSBY_API_POAP;
 const deliveriesUrl = (limit, offset) => `${apiHost}/deliveries?limit=${limit}&offset=${offset}`;
 
+exports.createSchemaCustomization = ({ actions }) => {
+  const { createTypes } = actions
+  const typeDefs = `
+    type Deliveries implements Node {
+      list: [DeliveryList!]
+    }
+    type DeliveryList {
+      card_text: String
+      card_title: String
+      event_ids: String
+      id: Int
+      image: String
+      page_title: String
+      page_text: String
+      page_title_image: String
+      slug: String
+      metadata_title: String
+      metadata_description: String
+    }
+  `
+  createTypes(typeDefs)
+}
+
 exports.sourceNodes = async ({
                                actions: {createNode},
                                createContentDigest,
