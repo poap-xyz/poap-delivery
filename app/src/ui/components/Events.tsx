@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
-import { Box, PseudoBox, Flex, Grid } from '@chakra-ui/core';
+import { graphql, useStaticQuery } from 'gatsby';
+import { PseudoBox, Flex, Grid } from '@chakra-ui/core';
 
 // Constants
 import events from 'lib/constants/events';
@@ -10,7 +11,29 @@ import EventCard from 'ui/components/EventCard';
 // Assets
 import question from 'assets/images/events/question.png';
 
+// Types
+import { GraphDelivery } from 'lib/types';
+
 const Events: FC = () => {
+  const apiDeliveries = useStaticQuery(graphql`
+    query {
+      deliveries {
+        list {
+          card_text
+          card_title
+          event_ids
+          id
+          image
+          page_title
+          page_text
+          page_title_image
+          slug
+        }
+      }
+    }
+  `);
+  let apiEvents: GraphDelivery[] = apiDeliveries?.deliveries?.list || [];
+
   return (
     <PseudoBox w={'100%'} pb={'100px'} mt={'50px'}>
       <PseudoBox w={['100%', ' 100%', '100%', '100%', '100%', '85%']} maxW={1600} m={'0 auto'}>
@@ -18,6 +41,20 @@ const Events: FC = () => {
           templateColumns={['1fr', '1fr', '1fr 1fr', '1fr 1fr', '1fr 1fr 1fr 1fr']}
           padding={['0', '0', '0 50px', '0 150px', '0']}
         >
+          {apiEvents.map((delivery) => {
+            return (
+              <Flex flex={1} justifyContent={'center'} key={delivery.id} mt={'50px'}>
+                <EventCard
+                  title={delivery.card_title}
+                  body={delivery.card_text}
+                  image={delivery.image}
+                  buttonText={'Claim your POAP'}
+                  buttonEnabled
+                  buttonLink={delivery.slug}
+                />
+              </Flex>
+            );
+          })}
           {Object.keys(events)
             .reverse()
             .map((key) => {
