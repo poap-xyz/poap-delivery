@@ -98,7 +98,7 @@ const Community: FC = () => {
         <a href="https://twitter.com/poapxyz" target="_blank" rel="noreferrer">
           <span className="social-link twitter" />
         </a>
-        <a href="https://github.com/poapxyz" target="_blank" rel="noreferrer">
+        <a href="https://github.com/poap-xyz" target="_blank" rel="noreferrer">
           <span className="social-link github" />
         </a>
         <a href="https://t.me/poapxyz" target="_blank" rel="noreferrer">
