@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { graphql, useStaticQuery } from 'gatsby';
 import { PseudoBox, Flex, Grid } from '@chakra-ui/core';
 
@@ -13,6 +13,7 @@ import question from 'assets/images/events/question.png';
 
 // Types
 import { GraphDelivery } from 'lib/types';
+import Input from 'ui/styled/Input';
 
 const Events: FC = () => {
   const apiDeliveries = useStaticQuery(graphql`
@@ -34,9 +35,62 @@ const Events: FC = () => {
   `);
   let apiEvents: GraphDelivery[] = apiDeliveries?.deliveries?.list || [];
 
+  const [search, setSearch] = useState({});
+  const debounceFunction = (func, delay) => {
+    let timer;
+    return function () {
+      let self = this;
+      let args = arguments;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        func.apply(self, args);
+      }, delay);
+    };
+  };
+  const debounceHandleSearch = useCallback(
+    debounceFunction((nextValue, items) => handleNewSearchValue(nextValue, items), 800),
+    [],
+  );
+  const handleSearch = (event) => {
+    const value = event.target.value;
+    debounceHandleSearch(value, events);
+  };
+  const handleNewSearchValue = (value, items) => {
+    if (value && value.length > 1) {
+      var matchingKeys = Object.keys(items).filter(
+        (k) => k.toLowerCase().indexOf(value.toLowerCase()) !== -1,
+      );
+      const filteredItems = {};
+      matchingKeys.map((k) => (filteredItems[k] = items[k]));
+      setSearch(filteredItems);
+    } else {
+      setSearch([]);
+    }
+  };
+
+  useEffect(() => {
+    console.log(search);
+  }, [search]);
+
   return (
     <PseudoBox w={'100%'} pb={'100px'} mt={'50px'}>
       <PseudoBox w={['100%', ' 100%', '100%', '100%', '100%', '85%']} maxW={1600} m={'0 auto'}>
+        <div className="gallery-search" style={{ position: 'relative', width: '200px' }}>
+          <Input onChange={handleSearch} type="text" placeholder="Search.." />{' '}
+          {Object.keys(search).length ? (
+            <span
+              style={{
+                position: 'absolute',
+                top: '80%',
+                right: '0',
+                color: '#66666688',
+                fontSize: '.8rem',
+              }}
+            >
+              {Object.keys(search).length} result(s)
+            </span>
+          ) : null}
+        </div>
         <Grid
           templateColumns={['1fr', '1fr', '1fr 1fr', '1fr 1fr', '1fr 1fr 1fr 1fr']}
           padding={['0', '0', '0 50px', '0 150px', '0']}
@@ -55,7 +109,7 @@ const Events: FC = () => {
               </Flex>
             );
           })}
-          {Object.keys(events)
+          {Object.keys(Object.keys(search).length ? search : events)
             .reverse()
             .map((key) => {
               const _event = events[key];
